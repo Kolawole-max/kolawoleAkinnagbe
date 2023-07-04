@@ -1,0 +1,110 @@
+<!doctype html>
+
+<html lang="en">
+
+	<head>
+
+		<meta charset="utf-8">
+
+		<title>API Task</title>
+		<meta name="description" content="AJAX/PHP/CURL/JSON example">
+		<meta name="author" content="Kolawole Akinnagbe">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link href="favicon.ico" rel="icon">
+        <link rel="stylesheet" href="libs/css/bootstrap.css">
+        <link rel="stylesheet" href="css/style.css">
+
+	</head>
+
+	<body>
+
+        <div class="header">
+
+
+
+        </div>
+
+        <div class="preloader"> 
+
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">API name</th>
+                    <th scope="col" class="text-center">API description</th>
+                    <th scope="col"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">1.Ocean</th>
+                        <td>
+                            <div class="text-center">The name of the ocean or sea</div>
+                            <div class="text-center">
+                                <select id="oceanLng" class="d-inline form-select w-25" aria-label="Default select example">
+                                    <option value="-43.96625">-43.96625</option>
+                                    <option value="53.96625">53.96625</option>
+                                </select>
+                                <select id="oceanLat" class="d-inline form-select w-25" aria-label="Default select example">
+                                    <option value="40.78343">40.78343</option>
+                                    <option value="4.8835">4.8835</option>
+                                </select>
+                            </div>
+                            
+                        </td>
+                        <td><button type="button" id="oceanBtn" class="btn btn-primary">Submit</button></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">2.Address</th>
+                        <td>
+                            <div class="text-center">Finds the nearest street and address for a given lat/lng pair</div>
+                            <div class="text-center">
+                                <select id="addressLng" class="d-inline form-select w-25" aria-label="Default select example">
+                                    <option value="4.881">4.881</option>
+                                    <option value="2.3442">2.3442</option>
+                                </select>
+                                <select id="addressLat" class="d-inline form-select w-25" aria-label="Default select example">
+                                    <option value="52.358">52.358</option>
+                                    <option value="48.865">48.865</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td><button id="addressBtn" type="button" class="btn btn-primary">Submit</button></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">3.Find nearby</th>
+                        <td>
+                            <div class="text-center">Returns a list of postal codes and places for the a given lat/lng pair</div>
+                            <div class="text-center">
+                            <form>
+                                <select id="findNearbyLng" class="d-inline form-select w-25" aria-label="Default select example">
+                                    <option value="4.881">4.881</option>
+                                    <option value="-122.18">-122.18</option>
+                                </select>
+                                <select id="findNearbyLat" class="d-inline form-select w-25" aria-label="Default select example">
+                                    <option value="52.358">52.358</option>
+                                    <option value="37.451">37.451</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td><button id="findNearbyBtn" type="button" class="btn btn-primary">Submit</button></td>
+                    </form>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="text-center">
+                            <p class="fs-2">Results</p>
+                            <p id="para1"></p>
+                            <p id="para2"></p>
+                            <p id="para3"></p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+		<script type="application/javascript" src="libs/js/jquery.js"></script>
+		<script type="application/javascript" src="js/script.js"></script>
+	</body>
+
+</html>

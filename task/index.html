@@ -41,14 +41,8 @@
                         <td>
                             <div class="text-center">The name of the ocean or sea</div>
                             <div class="text-center">
-                                <select id="oceanLng" class="d-inline form-select w-25" aria-label="Default select example">
-                                    <option value="-43.96625">-43.96625</option>
-                                    <option value="53.96625">53.96625</option>
-                                </select>
-                                <select id="oceanLat" class="d-inline form-select w-25" aria-label="Default select example">
-                                    <option value="40.78343">40.78343</option>
-                                    <option value="4.8835">4.8835</option>
-                                </select>
+                                <input id="oceanLng" type="number" class="form-control w-25 d-inline"  placeholder="Latitude">
+                                <input id="oceanLat" type="number" class="form-control w-25 d-inline"  placeholder="Longitude">
                             </div>
                             
                         </td>
@@ -59,14 +53,8 @@
                         <td>
                             <div class="text-center">Finds the nearest street and address for a given lat/lng pair</div>
                             <div class="text-center">
-                                <select id="addressLng" class="d-inline form-select w-25" aria-label="Default select example">
-                                    <option value="4.881">4.881</option>
-                                    <option value="2.3442">2.3442</option>
-                                </select>
-                                <select id="addressLat" class="d-inline form-select w-25" aria-label="Default select example">
-                                    <option value="52.358">52.358</option>
-                                    <option value="48.865">48.865</option>
-                                </select>
+                                <input id="addressLng" type="number" class="form-control w-25 d-inline"  placeholder="Latitude">
+                                <input id="addressLat" type="number" class="form-control w-25 d-inline"  placeholder="Longitude">
                             </div>
                         </td>
                         <td><button id="addressBtn" type="button" class="btn btn-primary">Submit</button></td>
@@ -77,14 +65,8 @@
                             <div class="text-center">Returns a list of postal codes and places for the a given lat/lng pair</div>
                             <div class="text-center">
                             <form>
-                                <select id="findNearbyLng" class="d-inline form-select w-25" aria-label="Default select example">
-                                    <option value="4.881">4.881</option>
-                                    <option value="-122.18">-122.18</option>
-                                </select>
-                                <select id="findNearbyLat" class="d-inline form-select w-25" aria-label="Default select example">
-                                    <option value="52.358">52.358</option>
-                                    <option value="37.451">37.451</option>
-                                </select>
+                                <input id="findNearbyLng" type="number" class="form-control w-25 d-inline"  placeholder="Latitude">
+                                <input id="findNearbyLat" type="number" class="form-control w-25 d-inline"  placeholder="Longitude">
                             </div>
                         </td>
                         <td><button id="findNearbyBtn" type="button" class="btn btn-primary">Submit</button></td>

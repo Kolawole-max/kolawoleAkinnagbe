@@ -35,7 +35,7 @@ function fetchData(url, queryType, lat, lng) {
         },
         error: function(jqXHR, textStatus, errorThrown) {
             // your error code
-            $('#para1').html("No data was found. Make sure you're matching the options correctly");
+            $('#para1').html("No data found. Try a different value for the latitude and longitude");
             $('#para2').html("");
             $('#para3').html("");
         }

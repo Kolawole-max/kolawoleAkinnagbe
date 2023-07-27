@@ -1,18 +1,13 @@
 <?php
 	$countryBoundaries = "../libs/countryBorders/countryBorders.geo.json";
-
-	$countryName = $_REQUEST['countryName'];
-		
-	// Read the GeoJSON file
+	
 	$geojsonString = file_get_contents($countryBoundaries);
 
-	// Decode the GeoJSON data
 	$geojsonObject = json_decode($geojsonString);
 
-	// Get the 'name' property value
 	$countryInfo = null;
 	foreach($geojsonObject->features as $key){
-		if($key->properties->name == $countryName){
+		if($key->properties->iso_a2 == $_REQUEST['iso']){
 			$countryInfo = $key;
 		}
 		

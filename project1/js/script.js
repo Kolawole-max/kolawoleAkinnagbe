@@ -17,38 +17,68 @@ $(window).on('load', function () {
       
       $.each(options, function(index, data) {
         var newOption = $('<option>', {
-          value: data.name,
-          text: data.name + " | " + data.iso_a3
+          value: data.iso_a2, 
+          text: data.name
         });
         $('#countrySelectButton').append(newOption);
       });
     }).catch(function(error) {
       console.error(error);
-    });   
-    
-    var map = L.map('map'); //093ec152c9msh0d9691f95342f38p1c2dc2jsnd0dacbaced2e
+    }); 
 
-    L.tileLayer('https://maptiles.p.rapidapi.com/en/map/v1/{z}/{x}/{y}.png?rapidapi-key={apikey}', {
-      attribution: '&copy; <a href="http://www.maptilesapi.com/">MapTiles API</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      apikey: '093ec152c9msh0d9691f95342f38p1c2dc2jsnd0dacbaced2e',
-      maxZoom: 19
+    var streets = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012'
+    });
+
+    var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+    });
+    
+    var basemaps = {
+      "Streets": streets,
+      "Satellite": satellite
+    };
+
+    var map = L.map('map', {
+      layers: [streets]
+    }).setView([54.5, -4], 6);
+
+    var airports = L.markerClusterGroup({
+      polygonOptions: {
+        fillColor: '#fff',
+        color: '#000',
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.5
+      }
     }).addTo(map);
 
-    // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    //   attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
-    //   maxZoom: 13,
-    // }).addTo(map);
+    var cities = L.markerClusterGroup({
+      polygonOptions: {
+        fillColor: '#fff',
+        color: '#000',
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.5
+      }
+    }).addTo(map);
 
+    var overlays = {
+      "Airports": airports,
+      "Cities": cities
+    };
+
+    var layerControl = L.control.layers(basemaps, overlays).addTo(map);
     
 
     var featureGroup = L.featureGroup();
-    var markerClusterGroup = L.markerClusterGroup();
     var baseResult = null;
+    $('#countryInfoModal').modal('show');
 
     if (!navigator.geolocation) {
       
       // Geolocation is not supported
-      console.log("Geolocation is not supported by this browser.");
+      $('#preloader').hide();
     } else {
       // Geolocation is supported
       navigator.geolocation.getCurrentPosition(
@@ -60,66 +90,96 @@ $(window).on('load', function () {
           //Fetch country name using lat and lng
           baseResult = await fetchResultFromPhp('php/getCountryInfo.php', {lat:lat, lng: lng});
 
-          var countryName = baseResult['data'][0]['components']['country'];
+          var iso = baseResult.data[0].components['ISO_3166-1_alpha-2'];
 
           $('#countrySelectButton option').each(function(index, option) {
             var value = $(option).val();
-            if(value === countryName){
+            if(value === iso){
               $(option).prop('selected', true);
             }
           });
     
-          featureGroupFun(featureGroup, markerClusterGroup, baseResult, map, lat, lng);
+          featureGroupFun(featureGroup, baseResult, map, airports, cities);
 
           var buttonConfigs = [
             {
               id: 'countryInfoButton',
-              icon: 'info',
+              icon: "fa-info fa-lg",
               onClick: function() {
                 $('#countryInfoModal').modal('show');
               }
             },
             {
               id: 'weatherInfoButton',
-              icon: 'foggy',
+              icon: 'fa-solid fa-sun',
               onClick: function() {
                 $('#weatherInfoModal').modal('show');
               }
             },
             {
               id: 'currencyButton',
-              icon: 'currency_exchange',
+              icon: 'fa-solid fa-dollar-sign',
               onClick: function() {
                 $('#currencyModal').modal('show');
               }
+            },
+            {
+              id: 'newsButton',
+              icon: 'fa-regular fa-newspaper',
+              onClick: function() {
+                $('#newsModal').modal('show');
+              }
+            },
+            {
+              id: 'holidaysButton',
+              icon: 'fa-regular fa-calendar-days',
+              onClick: function() {
+                $('#publicHoliday').modal('show');
+              }
             }
           ];
-        
+
+          // var cityIcon = L.ExtraMarkers.icon({
+          //   prefix: 'fa',
+          //   icon: 'fa-city',
+          //   markerColor: 'green',
+          //   shape: 'square'
+          // });
+
           buttonConfigs.forEach(function(config) {
             var easyButton = L.easyButton({
               states: [
                 {
                   stateName: config.id,
-                  icon:  '<span class="material-icons">' + config.icon + '</span>',
+                  icon:  config.icon,
                   onClick: config.onClick
                 }
               ]
             });
-        
-            // Add the EasyButton to the map
             easyButton.addTo(map);
+            
           });
 
-          countryInfo(baseResult)
+          var capitalResult = await fetchResultFromPhp('php/getCapital.php', {iso : iso});
+          var capital = capitalResult.data[0].capital;
 
-          var currentWeatherInfo = await fetchResultFromPhp('php/getCurrentWeather.php', {lat: lat, lng: lng});
-          var hourlyForecast = await fetchResultFromPhp('php/getHourlyForecast.php', {lat: lat, lng: lng})
-          var dailyForecast = await fetchResultFromPhp('php/getdaily.php', {lat: lat, lng: lng})          
-          weather(baseResult, currentWeatherInfo, hourlyForecast, dailyForecast);
+          countryInfo(baseResult, capital)
+
+          var currentWeatherInfo = await fetchResultFromPhp('php/getCurrentWeather.php', {capital : capital});
+          var hourlyForecast = await fetchResultFromPhp('php/getHourlyForecast.php', {capital : capital})
+          var dailyForecast = await fetchResultFromPhp('php/getdaily.php', {capital : capital})          
+          weather(capital, baseResult, currentWeatherInfo, hourlyForecast, dailyForecast);
 
           var currency_iso = baseResult.data[0].annotations.currency.iso_code;
-          var currencyData = await fetchResultFromPhp('php/convertCurrency.php', {from: currency_iso, to: currency_iso});
+          var currencyData = await fetchResultFromPhp('php/getCurrencyRate.php', {from: currency_iso, to: currency_iso});
           currency(currencyData, baseResult, baseResult);
+
+          var currentYear = (new Date()).getFullYear();
+          var holidayData = await fetchResultFromPhp('php/getHoliday.php', {year: currentYear, iso: iso})
+          holiday(baseResult, holidayData)
+
+          var newsData = await fetchResultFromPhp('php/getNews.php', {iso: iso});
+          DisplayNews(baseResult, newsData);
         },
         function (error) {
           // Error occurred while retrieving location
@@ -131,45 +191,101 @@ $(window).on('load', function () {
     //Change action for select button and load lat and lng from getCountryInfo
     $('#countrySelectButton').change(function() {
       $('#preloader').show();
-      var countryName = $(this).val();
-      var countryData = fetchResultFromPhp('php/getCountryInfo.php', {countryName : countryName});
+      
+      var selected_iso = $(this).val();
+      var countryData = fetchResultFromPhp('php/getCountryInfo.php', {iso : selected_iso});
 
       countryData.then(async function(selectedResult) {
 
-        var lat = selectedResult.data[0].geometry.lat;
-        var lng = selectedResult.data[0].geometry.lng;
-
-        if(map.hasLayer(featureGroup)){
-          map.removeLayer(featureGroup);
-          map.removeLayer(markerClusterGroup);
-        }
-
-        markerClusterGroup = L.markerClusterGroup();
+        $('#countryInfoModal').modal('show');
         featureGroup = await L.featureGroup();
-        featureGroupFun(featureGroup, markerClusterGroup, selectedResult, map, lat, lng)
+        featureGroupFun(featureGroup, selectedResult, map, airports, cities)
 
-        countryInfo(selectedResult)
+        var capitalResult = await fetchResultFromPhp('php/getCapital.php', {iso : selected_iso});
+        var selectedCapital = capitalResult.data[0].capital;
 
-        var currentWeatherInfo = await fetchResultFromPhp('php/getCurrentWeather.php', {lat: lat, lng: lng});
-        var hourlyForecast = await fetchResultFromPhp('php/getHourlyForecast.php', {lat: lat, lng: lng})
-        var dailyForecast = await fetchResultFromPhp('php/getdaily.php', {lat: lat, lng: lng})          
-        weather(selectedResult, currentWeatherInfo, hourlyForecast, dailyForecast);
+        countryInfo(selectedResult, selectedCapital)
+
+        var currentWeatherInfo = await fetchResultFromPhp('php/getCurrentWeather.php', {capital : selectedCapital});
+        var hourlyForecast = await fetchResultFromPhp('php/getHourlyForecast.php', {capital : selectedCapital})
+        var dailyForecast = await fetchResultFromPhp('php/getdaily.php', {capital : selectedCapital})          
+        weather(selectedCapital, selectedResult, currentWeatherInfo, hourlyForecast, dailyForecast);
 
         var baseCurrency_iso = baseResult.data[0].annotations.currency.iso_code;
         var selectedCurrency_iso = selectedResult.data[0].annotations.currency.iso_code;
-        var currencyData = await fetchResultFromPhp('php/convertCurrency.php', {from: baseCurrency_iso, to: selectedCurrency_iso});
+        var currencyData = await fetchResultFromPhp('php/getCurrencyRate.php', {from: baseCurrency_iso, to: selectedCurrency_iso});
         currency(currencyData, baseResult, selectedResult)
+
+        var currentYear = (new Date()).getFullYear();
+        var holidayData = await fetchResultFromPhp('php/getHoliday.php', {year: currentYear, iso: selected_iso})
+        holiday(selectedResult, holidayData)
+
+        var newsData = await fetchResultFromPhp('php/getNews.php', {iso: selected_iso});
+        DisplayNews(selectedResult, newsData);
+
         $('#preloader').hide();
       }).catch(function(error) {
-        console.error(error);
+        console.error(error.message);
       });  
-      
     });
 });
 
+//Display news
+function DisplayNews(result, newsData){
+  $('#newsHeading').text(result.data[0].components.country)
+
+  var news = newsData.data.map(function(result) {
+    if(result.image_url){
+    return `<table class="table table-borderless mb-0">       
+            <tr>
+              <td rowspan="2" width="50%">
+                <img class="img-fluid rounded" src=${result.image_url} alt="" title="">
+              </td>
+              <td>
+                <a href=${result.link} class="fw-bold fs-6 text-black" target="_blank">${result.title}</a>
+              </td>
+            </tr>
+            <tr>          
+              <td class="align-bottom pb-0">
+                <p class="fw-light fs-6 mb-1">${result.source_id}</p>
+              </td>
+            </tr>
+          </table> <hr> `
+    }
+  }).join('');
+  $('#newsBody').append(news)
+}
+
+//Display holiday dates
+function holiday(result, holidayData){
+  $('#holidayBody').text('');
+  var countryName = result.data[0].components.country;
+
+  $('#holidayLabel').text(countryName)
+
+  var date = holidayData.data.map(function(result) {
+    var parts = result.date.split("-");
+    var year = parts[0];
+    var month = parts[1];
+    var day = parts[2];
+
+    var convertedDateString = day + "-" + month + "-" + year;
+
+    return `<tr>
+              <td>${result.name}</td>
+              <td>${convertedDateString}</td>
+            </tr>`;
+    
+  }).join('');
+  
+  $('#holidayBody').append(date);
+}
+
 
 //Display country info
-function countryInfo(result){
+function countryInfo(result, capital){
+  $('#preloader').show();
+
   var countryName = result.data[0].components.country;
   var flag = result.data[0].components.country_code.toUpperCase();
 
@@ -178,21 +294,22 @@ function countryInfo(result){
 
   var currencySymbolEntity = result.data[0].annotations.currency.symbol;
 
-  $("#countryName").text(countryName);
+  $("#capitalName").text(capital);
   $("#continent").text(result.data[0].components.continent);
   $("#countryCode").text(result.data[0].components.country_code);
   $("#countryInfoCurrencyName").text(result.data[0].annotations.currency.name);
   $("#driveOn").text(result.data[0].annotations.roadinfo.drive_on);
-  $("#currencySymbol").html(currencySymbolEntity);  
+  $("#currencySymbol").html(currencySymbolEntity); 
+  
+  //$('#countryInfoModal').modal('show');
+
+  $('#preloader').hide();
 }
 
-
-
 //Display weather info
-function weather(result, currentWeatherInfo, hourlyForecast, dailyForecast){
+function weather(capital, result, currentWeatherInfo, hourlyForecast, dailyForecast){
 
   var countryName = result.data[0].components.country;
-  var flag = result.data[0].components.country_code.toUpperCase();
 
   var dailyContainer = $('#dailyContainer');
   dailyContainer.text('');
@@ -200,19 +317,16 @@ function weather(result, currentWeatherInfo, hourlyForecast, dailyForecast){
   var hourlyContainer = $('#hourly');
   hourlyContainer.text('');
 
-  $('#weatherInfoLabel').text(countryName)
-  $('#weatherImg').attr('src', `https://flagsapi.com/` + flag + `/shiny/64.png`)
+  $('#weatherInfoLabel').text(`${capital}, ${countryName}`)
 
   $('#currentImg').attr('src', `https://openweathermap.org/img/wn/${currentWeatherInfo.data.weather[0].icon}.png`)
 
   $('#description').text(currentWeatherInfo.data.weather[0].description);
-  $('#temp').text(currentWeatherInfo.data.main.temp);
-  $('#feels_like').text(currentWeatherInfo.data.main.feels_like);
-  $('#wind').text(currentWeatherInfo.data.wind.speed);
-  $('#pressure').text(currentWeatherInfo.data.main.pressure);
+  $('#temp').text(`${Math.ceil(currentWeatherInfo.data.main.temp)}\u00B0C`);
+  $('#feels_like').text(`${Math.ceil(currentWeatherInfo.data.main.feels_like)}\u00B0C`);
 
-  var limitedHourly = hourlyForecast.data.slice(0, 6);
-  var limitedDaily = dailyForecast.data.slice(1, 7);
+  var limitedHourly = hourlyForecast.data.slice(0, 4);
+  var limitedDaily = dailyForecast.data.slice(1, 5);
 
   var hourlyCards = limitedHourly.map(function(data) {
       return `<div class="col p-1 ps-0">
@@ -220,7 +334,7 @@ function weather(result, currentWeatherInfo, hourlyForecast, dailyForecast){
                     <h5>${convertTimeToAMPM(data.dt_txt.split(" ")[1])}</h5>
                     <div class="card-body text-truncate text-center">
                       <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}.png" class="img-fluid rounded-start" alt="...">
-                      <p class="card-text">${data.main.temp}\u00B0C</p>
+                      <p class="card-text">${Math.ceil(data.main.temp)}\u00B0C</p>
                     </div>
                   </div>
                 </div>`;
@@ -237,7 +351,7 @@ function weather(result, currentWeatherInfo, hourlyForecast, dailyForecast){
                 <div class="card mb-3">
                   <h5 class="text-center">${convertDateToDayName(data.datetime)}</h5>
                   <img src="https://www.weatherbit.io/static/img/icons/${data.weather.icon}.png" class="img-fluid rounded-start" alt="...">
-                  <div class="text-wrap text-center" style="white-space: nowrap;">${data.max_temp} - ${data.min_temp}\u00B0C</div>
+                  <div class="text-wrap text-center" style="white-space: nowrap;">${Math.ceil(data.max_temp)} - ${Math.ceil(data.min_temp)}\u00B0C</div>
                 </div>
               </div>`;
     
@@ -246,22 +360,20 @@ function weather(result, currentWeatherInfo, hourlyForecast, dailyForecast){
   dailyContainer.append(dailyCards);
 }
 
+//conver to 2 decimal number
+function convertToDecimal(number){
+  var roundedNumber = Math.ceil(number * 100) / 100;
+  return roundedNumber.toFixed(2);
+}
+
 //Display currency det and converter
 async function currency(currencyData, baseResult, selectedResult){
-
-  var countryName = selectedResult.data[0].components.country;
-  var flag = selectedResult.data[0].components.country_code.toUpperCase();
-
-  $('#currencyLabel').text(countryName)
-  $('#currencyImg').attr('src', `https://flagsapi.com/` + flag + `/shiny/64.png`)
 
   var selectedSymbol = selectedResult.data[0].annotations.currency.symbol;
   var baseSymbol = baseResult.data[0].annotations.currency.symbol;
 
   $('#currencyResult').text(selectedSymbol + '0');
-  $('#currencyResult2').text(baseSymbol + '0');
   $('#conversionInput').val('');
-  $('#conversionInput2').val('');
 
   var baseCurrency_iso = baseResult.data[0].annotations.currency.iso_code;
   var selectedCurrency_iso = selectedResult.data[0].annotations.currency.iso_code;
@@ -269,34 +381,21 @@ async function currency(currencyData, baseResult, selectedResult){
   $('#currencyName').text(`Currency name: ${selectedResult.data[0].annotations.currency.name}`)
   $('#symbol').html(`Symbol: ${selectedSymbol}`)
   $('#code').text(`Currency code: ${selectedCurrency_iso}`)
-  $('#conversion').html(`Conversion rate: ${baseSymbol}1 is ${selectedSymbol + currencyData.data[selectedCurrency_iso]}`)
+  $('#conversion').html(`Conversion rate: ${baseSymbol}1 is ${selectedSymbol + convertToDecimal(currencyData.data[selectedCurrency_iso])}`)
   
-  $('label[for="conversionInput"]').text(`${baseCurrency_iso} to ${selectedCurrency_iso}`);
-  $('label[for="conversionInput2"]').text(`${selectedCurrency_iso} to ${baseCurrency_iso}`);
+  $('label[for="conversionInput"]').text(`${baseSymbol} to ${selectedSymbol}`);
 
   var convertedResult = ''
 
   $('#conversionInput').on('input', async function() {
     var amount = $(this).val();
     if(amount){
-      
       convertedResult = await fetchResultFromPhp('php/convertCurrency.php', {from: baseCurrency_iso, to: selectedCurrency_iso, amount: amount});
-      $('#currencyResult').text(selectedSymbol + convertedResult.data);
-      console.log(convertedResult)
+      $('#currencyResult').text(selectedSymbol + convertToDecimal(convertedResult.data));
     } else {
       $('#currencyResult').text(selectedSymbol + '0');
     }
     
-  });
-
-  $('#conversionInput2').on('input', async function() {
-    var amount = $(this).val();
-    if(amount){
-      var convertedResult2 = await fetchResultFromPhp('php/convertCurrency.php', {from: selectedCurrency_iso, to: baseCurrency_iso, amount: amount});
-      $('#currencyResult2').text(baseSymbol + convertedResult2.data);
-    } else {
-      $('#currencyResult2').text(baseSymbol + '0');
-    }
   });
 }
 
@@ -324,11 +423,12 @@ function convertTimeToAMPM(time) {
 
 
 //Feature group
-async function featureGroupFun(featureGroup, markerClusterGroup, countryData, map, lat, lng){
+async function featureGroupFun(featureGroup, countryData, map, airports, cities){
   try{
 
-    var countryName = countryData.data[0].components.country;
+    //var countryName = countryData.data[0].components.country;
     var countryCode = countryData.data[0].components.country_code.toUpperCase();
+    var iso = countryData.data[0].components['ISO_3166-1_alpha-2'];
 
     // Style the county boundary
     var countyBoundaryStyle = {
@@ -337,15 +437,27 @@ async function featureGroupFun(featureGroup, markerClusterGroup, countryData, ma
       opacity: 0.8,
     };
 
-    var customIcon = L.icon({
-      iconUrl: 'library.png',
-      iconSize: [32, 32], // [width, height]
-      iconAnchor: [16, 32], // The point of the icon that corresponds to the marker's geographical location
-      popupAnchor: [0, -32] // The point from which the popup should open relative to the iconAnchor
+    var airportIcon = L.divIcon({
+      className: 'custom-icon', // Define a custom CSS class for the icon
+      html: '<i class="fa fa-plane" style="font-size: 24px; color: black;"></i>',
+      iconSize: [24, 24] // Set the icon size
+    });
+    
+    var cityIcon = L.divIcon({
+      className: 'custom-icon', // Define a custom CSS class for the icon
+      html: '<i class="fas fa-city" style="font-size: 24px; color: green;"></i>',
+      iconSize: [24, 24] // Set the icon size
     });
 
+    // var customIcon = L.icon({
+    //   iconUrl: 'library.png',
+    //   iconSize: [32, 32], // [width, height]
+    //   iconAnchor: [16, 32], // The point of the icon that corresponds to the marker's geographical location
+    //   popupAnchor: [0, -32] // The point from which the popup should open relative to the iconAnchor
+    // });
 
-    $.getJSON('php/getCountryBoundaries.php', { countryName: countryName })
+
+    $.getJSON('php/getCountryBoundaries.php', { iso: iso })
       .then(function(data) {
         return new Promise(function(resolve) {
           resolve(data);
@@ -356,48 +468,44 @@ async function featureGroupFun(featureGroup, markerClusterGroup, countryData, ma
           style: countyBoundaryStyle
         });
         featureGroup.addLayer(geojsonLayer);
+
+        map.fitBounds(geojsonLayer.getBounds())
       })
       .catch(function(error) {
         console.error('Error fetching GeoJSON data:', error);
       });
 
+    var wikiResults = await fetchResultFromPhp('php/wikiCountry.php', {iso: iso}); 
+    
+    wikiResults.data.forEach(result => {
+      L.marker([result.lat, result.lng], {icon: cityIcon})
+              .bindTooltip(result.title, {direction: 'top', sticky: true})
+              .addTo(airports);
+    });
 
-  var markerPositions = [];
-  var markers = [];
+    var airportResult = await fetchResultFromPhp('php/getAirports.php', {iso: iso})
 
-  var results = await fetchResultFromPhp('php/wikiCountry.php', {countryName: countryName}); 
-  
-  results.data.forEach(result => {
-    if(result.countryCode === countryCode){
-      console.log(result)
-      var arr = [result.lat, result.lng, result.title, result.summary, result.wikipediaUrl];
-      markerPositions.push(arr); 
-    }
-  });
+    airportResult.data.forEach(result => {
+      L.marker([result.lat, result.lng], {icon: airportIcon})
+              .bindTooltip(result.name, {direction: 'top', sticky: true})
+              .addTo(airports);
+    });
 
-  markerPositions.forEach(function(position) {
-    var marker = L.marker([position[0], position[1]], { icon: customIcon });
+    // markerPositions.forEach(function(position) {
+    //   var marker = L.marker([position[0], position[1]], { icon: customIcon });
 
-    var title = position[2];
-    var message = position[3];
-    var wikipediaUrl = position[4];
+    //   var title = position[2];
+    //   var message = position[3];
+    //   var wikipediaUrl = position[4];
 
-    marker.bindPopup(`<h3>${title}</h3><p>${message}</p><a href="${wikipediaUrl}" target="_blank">More Info</a>`);
+    //   marker.bindPopup(`<h3>${title}</h3><p>${message}</p><a href="${wikipediaUrl}" target="_blank">More Info</a>`);
 
-    markers.push(marker);
-  });
+    //   markers.push(marker);
+    // });
 
-  var markerClusterGroup = L.markerClusterGroup();
+    map.addLayer(featureGroup)
 
-  markerClusterGroup.addLayers(markers);
-  map.addLayer(markerClusterGroup);
-
-  map.addLayer(featureGroup)
-
-  var bounds = markerClusterGroup.getBounds();
-  map.fitBounds(bounds);
-
-  $('#preloader').hide();
+    $('#preloader').hide();
     
   } catch(error){
     console.log('Error:', error);

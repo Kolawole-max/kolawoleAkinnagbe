@@ -5,8 +5,8 @@
 
 	require_once 'CUrlLogic.php';
 
-    $url='https://api.exchangeratesapi.io/v1/convert?access_key=5da14617d22bcbfc65f3a1d4866bca2b&from=' . $_REQUEST['from'] . '&to=' . $_REQUEST['to'] . '&amount=' . $_REQUEST['amount'];
-    $decodeValue = 'result';
+    $url='https://api.exchangeratesapi.io/v1/latest?access_key=5da14617d22bcbfc65f3a1d4866bca2b&base=' . $_REQUEST['from'] . '&symbols=' . $_REQUEST['to'];
+    $decodeValue = 'rates';
 
 	$logic = new CUrlLogic();
 	$result = $logic->getResult($url, $decodeValue);

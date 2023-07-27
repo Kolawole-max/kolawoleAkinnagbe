@@ -4,7 +4,9 @@
 	require_once 'CUrlLogic.php';
 	$decodeValue = 'list';
 
-	$url='https://api.openweathermap.org/data/2.5/forecast?lat=' . $_REQUEST['lat'] . '&lon=' . $_REQUEST['lng'] . '&appid=0d16cc1253129d6e3af581abfa975fbb&units=metric';
+	//$_REQUEST['capital'] = 'Paris';
+
+	$url='https://api.openweathermap.org/data/2.5/forecast?q=' . $_REQUEST['capital'] . '&appid=0d16cc1253129d6e3af581abfa975fbb&units=metric';
 
 	$logic = new CUrlLogic();
 	$result = $logic->getResult($url, $decodeValue);

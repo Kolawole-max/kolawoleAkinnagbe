@@ -21,7 +21,9 @@
             $output['status']['name'] = "ok";
             $output['status']['description'] = "success";
             $output['status']['returnedIn'] = intval((microtime(true) - $executionStartTime) * 1000) . " ms";
-            if(is_string($decordValue)){
+            if($decordValue === null){
+                $output['data'] = $decode;
+            }else if(is_string($decordValue)){
                 $output['data'] = $decode[$decordValue];
             } else {
                 $output['data'] = array();

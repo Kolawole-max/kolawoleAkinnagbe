@@ -4,7 +4,9 @@
 	require_once 'CUrlLogic.php';
 	$decodeValue = 'data';
 
-	$url='https://api.weatherbit.io/v2.0/forecast/daily?&lat=' . $_REQUEST['lat'] . '&lon=' . $_REQUEST['lng'] . '&key=60d9aa8b810746efbabcf84be114875e';
+	//$_REQUEST['capital'] = 'Paris';
+
+	$url='https://api.weatherbit.io/v2.0/forecast/daily?&city=' . $_REQUEST['capital'] . '&key=60d9aa8b810746efbabcf84be114875e';
 
 	$logic = new CUrlLogic();
 	$result = $logic->getResult($url, $decodeValue);

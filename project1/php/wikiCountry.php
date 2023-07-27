@@ -4,9 +4,8 @@
 	require_once 'CUrlLogic.php';
 	$decodeValue = 'geonames';
 
-	//$_REQUEST['countryName'] = "United States";
-	$modifiedCountryName = str_replace(' ', '+', $_REQUEST['countryName']);
-	$url='http://api.geonames.org/wikipediaSearchJSON?formatted=true&q=' . $modifiedCountryName . '&maxRows=100&username=kolawole&style=full';
+	//$_REQUEST['iso'] = "gb";
+	$url='http://api.geonames.org/wikipediaSearchJSON?formatted=true&q=' . $_REQUEST['iso'] . '&country=' . $_REQUEST['iso'] . '&maxRows=10&username=kolawole&style=full';
 
 	$logic = new CUrlLogic();
 	$result = $logic->getResult($url, $decodeValue);

@@ -69,7 +69,6 @@ $(window).on('load', function () {
     };
 
     var layerControl = L.control.layers(basemaps, overlays).addTo(map);
-    
 
     var featureGroup = L.featureGroup();
     var baseResult = null;
@@ -130,24 +129,17 @@ $(window).on('load', function () {
                 $('#newsModal').modal('show');
               }
             },
-            {
+            { 
               id: 'holidaysButton',
-              icon: 'fa-regular fa-calendar-days',
+              icon: 'fa-regular fa-table',
               onClick: function() {
                 $('#publicHoliday').modal('show');
               }
             }
           ];
 
-          // var cityIcon = L.ExtraMarkers.icon({
-          //   prefix: 'fa',
-          //   icon: 'fa-city',
-          //   markerColor: 'green',
-          //   shape: 'square'
-          // });
-
           buttonConfigs.forEach(function(config) {
-            var easyButton = L.easyButton({
+            L.easyButton({
               states: [
                 {
                   stateName: config.id,
@@ -155,9 +147,7 @@ $(window).on('load', function () {
                   onClick: config.onClick
                 }
               ]
-            });
-            easyButton.addTo(map);
-            
+            }).addTo(map);
           });
 
           var capitalResult = await fetchResultFromPhp('php/getCapital.php', {iso : iso});
@@ -197,14 +187,16 @@ $(window).on('load', function () {
 
       countryData.then(async function(selectedResult) {
 
-        $('#countryInfoModal').modal('show');
-        featureGroup = await L.featureGroup();
+        featureGroup.clearLayers();
+        airports.clearLayers();
+        cities.clearLayers();
         featureGroupFun(featureGroup, selectedResult, map, airports, cities)
 
         var capitalResult = await fetchResultFromPhp('php/getCapital.php', {iso : selected_iso});
         var selectedCapital = capitalResult.data[0].capital;
 
         countryInfo(selectedResult, selectedCapital)
+        $('#countryInfoModal').modal('show');
 
         var currentWeatherInfo = await fetchResultFromPhp('php/getCurrentWeather.php', {capital : selectedCapital});
         var hourlyForecast = await fetchResultFromPhp('php/getHourlyForecast.php', {capital : selectedCapital})
@@ -223,7 +215,7 @@ $(window).on('load', function () {
         var newsData = await fetchResultFromPhp('php/getNews.php', {iso: selected_iso});
         DisplayNews(selectedResult, newsData);
 
-        $('#preloader').hide();
+        //$('#preloader').hide();
       }).catch(function(error) {
         console.error(error.message);
       });  
@@ -437,78 +429,93 @@ async function featureGroupFun(featureGroup, countryData, map, airports, cities)
       opacity: 0.8,
     };
 
-    var airportIcon = L.divIcon({
-      className: 'custom-icon', // Define a custom CSS class for the icon
-      html: '<i class="fa fa-plane" style="font-size: 24px; color: black;"></i>',
-      iconSize: [24, 24] // Set the icon size
+    var airportIcon = L.ExtraMarkers.icon({
+      prefix: 'fa',
+      icon: 'fa-plane',
+      iconColor: 'black',
+      markerColor: 'white',
+      shape: 'square'
     });
     
-    var cityIcon = L.divIcon({
-      className: 'custom-icon', // Define a custom CSS class for the icon
-      html: '<i class="fas fa-city" style="font-size: 24px; color: green;"></i>',
-      iconSize: [24, 24] // Set the icon size
+    var cityIcon = L.ExtraMarkers.icon({
+      prefix: 'fa',
+      icon: 'fa-city',
+      markerColor: 'green',
+      shape: 'square'
     });
-
-    // var customIcon = L.icon({
-    //   iconUrl: 'library.png',
-    //   iconSize: [32, 32], // [width, height]
-    //   iconAnchor: [16, 32], // The point of the icon that corresponds to the marker's geographical location
-    //   popupAnchor: [0, -32] // The point from which the popup should open relative to the iconAnchor
-    // });
 
 
     $.getJSON('php/getCountryBoundaries.php', { iso: iso })
-      .then(function(data) {
-        return new Promise(function(resolve) {
-          resolve(data);
-        });
-      })
-      .then(function(data) {
-        var geojsonLayer = L.geoJSON(data.data, {
-          style: countyBoundaryStyle
-        });
-        featureGroup.addLayer(geojsonLayer);
+    .then(function(data) {
+      return new Promise(function(resolve) {
+        resolve(data);
+      });
+    })
+    .then(async function(data) {
+      var geojsonLayer = L.geoJSON(data.data, {
+        style: countyBoundaryStyle
+      });
+      featureGroup.addLayer(geojsonLayer);
 
-        map.fitBounds(geojsonLayer.getBounds())
-      })
-      .catch(function(error) {
-        console.error('Error fetching GeoJSON data:', error);
+      map.fitBounds(geojsonLayer.getBounds())
+
+      // var isInside = false;
+      // if (featureGroup.getLayers().length > 0) {
+        
+      //   featureGroup.eachLayer(function(layer) {
+      //     var layerGeoJSON = layer.toGeoJSON();
+      //     var pt = turf.point([-77, 44]);
+
+      //     // Check if the point is inside the current layer's geometry
+      //     if (layerGeoJSON.geometry) {
+      //       console.log(layerGeoJSON)
+      //       if (layerGeoJSON.geometry.type === 'Polygon') {
+      //         if (turf.booleanPointInPolygon(pt, layerGeoJSON)) {
+      //           isInside = true;
+      //         }
+      //       } else if (layerGeoJSON.geometry.type === 'MultiPolygon') {
+      //         layerGeoJSON.geometry.coordinates.forEach(function(polygon) {
+      //           if (turf.booleanPointInPolygon(pt, turf.polygon(polygon))) {
+      //             console.log(polygon)
+      //             isInside = true;
+      //           }
+      //         });
+      //       }
+      //     }
+      //   });
+      // }
+
+      //console.log('Is the point inside the MultiPolygon?', isInside);
+      
+
+      var wikiResults = await fetchResultFromPhp('php/wikiCountry.php', {iso: iso});
+      wikiResults.data.forEach(result => {
+        L.marker([result.lat, result.lng], {icon: cityIcon})
+                .bindPopup(`<h5>${result.title}</h5><p>${result.summary}</p><a href="${result.wikipediaUrl}" target="_blank">More Info</a>`)
+                .addTo(cities);
+                
+      });
+  
+      var airportResult = await fetchResultFromPhp('php/getAirports.php', {iso: iso})
+  
+      airportResult.data.forEach(result => {
+        L.marker([result.lat, result.lng], {icon: airportIcon})
+          .bindTooltip(result.name, {direction: 'top', sticky: true})
+          .addTo(airports);
       });
 
-    var wikiResults = await fetchResultFromPhp('php/wikiCountry.php', {iso: iso}); 
-    
-    wikiResults.data.forEach(result => {
-      L.marker([result.lat, result.lng], {icon: cityIcon})
-              .bindTooltip(result.title, {direction: 'top', sticky: true})
-              .addTo(airports);
+
+    })
+    .catch(function(error) {
+      console.error('Error fetching GeoJSON data:', error.message);
     });
-
-    var airportResult = await fetchResultFromPhp('php/getAirports.php', {iso: iso})
-
-    airportResult.data.forEach(result => {
-      L.marker([result.lat, result.lng], {icon: airportIcon})
-              .bindTooltip(result.name, {direction: 'top', sticky: true})
-              .addTo(airports);
-    });
-
-    // markerPositions.forEach(function(position) {
-    //   var marker = L.marker([position[0], position[1]], { icon: customIcon });
-
-    //   var title = position[2];
-    //   var message = position[3];
-    //   var wikipediaUrl = position[4];
-
-    //   marker.bindPopup(`<h3>${title}</h3><p>${message}</p><a href="${wikipediaUrl}" target="_blank">More Info</a>`);
-
-    //   markers.push(marker);
-    // });
 
     map.addLayer(featureGroup)
 
     $('#preloader').hide();
     
   } catch(error){
-    console.log('Error:', error);
+    console.log('Error:', error.message);
   }
 }
 

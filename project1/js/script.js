@@ -68,15 +68,62 @@ $(window).on('load', function () {
       "Cities": cities
     };
 
-    var layerControl = L.control.layers(basemaps, overlays).addTo(map);
+    L.control.layers(basemaps, overlays).addTo(map);
 
     var featureGroup = L.featureGroup();
     var baseResult = null;
-    $('#countryInfoModal').modal('show');
+    
+    var buttonConfigs = [
+      {
+        id: 'countryInfoButton',
+        icon: "fa-info fa-lg",
+        onClick: function() {
+          $('#countryInfoModal').modal('show');
+        }
+      },
+      {
+        id: 'weatherInfoButton',
+        icon: 'fa-solid fa-sun',
+        onClick: function() {
+          $('#weatherInfoModal').modal('show');
+        }
+      },
+      {
+        id: 'currencyButton',
+        icon: 'fa-solid fa-dollar-sign',
+        onClick: function() {
+          $('#currencyModal').modal('show');
+        }
+      },
+      {
+        id: 'newsButton',
+        icon: 'fa-regular fa-newspaper',
+        onClick: function() {
+          $('#newsModal').modal('show');
+        }
+      },
+      { 
+        id: 'holidaysButton',
+        icon: 'fa-regular fa-table',
+        onClick: function() {
+          $('#publicHoliday').modal('show');
+        }
+      }
+    ];
+
+    buttonConfigs.forEach(function(config) {
+      L.easyButton({
+        states: [
+          {
+            stateName: config.id,
+            icon:  config.icon,
+            onClick: config.onClick
+          }
+        ]
+      }).addTo(map);
+    });
 
     if (!navigator.geolocation) {
-      
-      // Geolocation is not supported
       $('#preloader').hide();
     } else {
       // Geolocation is supported
@@ -88,88 +135,10 @@ $(window).on('load', function () {
 
           //Fetch country name using lat and lng
           baseResult = await fetchResultFromPhp('php/getCountryInfo.php', {lat:lat, lng: lng});
-
+          
           var iso = baseResult.data[0].components['ISO_3166-1_alpha-2'];
+          $('#countrySelectButton').val(iso).change();
 
-          $('#countrySelectButton option').each(function(index, option) {
-            var value = $(option).val();
-            if(value === iso){
-              $(option).prop('selected', true);
-            }
-          });
-    
-          featureGroupFun(featureGroup, baseResult, map, airports, cities);
-
-          var buttonConfigs = [
-            {
-              id: 'countryInfoButton',
-              icon: "fa-info fa-lg",
-              onClick: function() {
-                $('#countryInfoModal').modal('show');
-              }
-            },
-            {
-              id: 'weatherInfoButton',
-              icon: 'fa-solid fa-sun',
-              onClick: function() {
-                $('#weatherInfoModal').modal('show');
-              }
-            },
-            {
-              id: 'currencyButton',
-              icon: 'fa-solid fa-dollar-sign',
-              onClick: function() {
-                $('#currencyModal').modal('show');
-              }
-            },
-            {
-              id: 'newsButton',
-              icon: 'fa-regular fa-newspaper',
-              onClick: function() {
-                $('#newsModal').modal('show');
-              }
-            },
-            { 
-              id: 'holidaysButton',
-              icon: 'fa-regular fa-table',
-              onClick: function() {
-                $('#publicHoliday').modal('show');
-              }
-            }
-          ];
-
-          buttonConfigs.forEach(function(config) {
-            L.easyButton({
-              states: [
-                {
-                  stateName: config.id,
-                  icon:  config.icon,
-                  onClick: config.onClick
-                }
-              ]
-            }).addTo(map);
-          });
-
-          var capitalResult = await fetchResultFromPhp('php/getCapital.php', {iso : iso});
-          var capital = capitalResult.data[0].capital;
-
-          countryInfo(baseResult, capital)
-
-          var currentWeatherInfo = await fetchResultFromPhp('php/getCurrentWeather.php', {capital : capital});
-          var hourlyForecast = await fetchResultFromPhp('php/getHourlyForecast.php', {capital : capital})
-          var dailyForecast = await fetchResultFromPhp('php/getdaily.php', {capital : capital})          
-          weather(capital, baseResult, currentWeatherInfo, hourlyForecast, dailyForecast);
-
-          var currency_iso = baseResult.data[0].annotations.currency.iso_code;
-          var currencyData = await fetchResultFromPhp('php/getCurrencyRate.php', {from: currency_iso, to: currency_iso});
-          currency(currencyData, baseResult, baseResult);
-
-          var currentYear = (new Date()).getFullYear();
-          var holidayData = await fetchResultFromPhp('php/getHoliday.php', {year: currentYear, iso: iso})
-          holiday(baseResult, holidayData)
-
-          var newsData = await fetchResultFromPhp('php/getNews.php', {iso: iso});
-          DisplayNews(baseResult, newsData);
         },
         function (error) {
           // Error occurred while retrieving location
@@ -178,7 +147,9 @@ $(window).on('load', function () {
       );
     }    
 
-    //Change action for select button and load lat and lng from getCountryInfo
+    var selectedResults;
+    var currencyCode;
+    //Change action for select button
     $('#countrySelectButton').change(function() {
       $('#preloader').show();
       
@@ -187,12 +158,16 @@ $(window).on('load', function () {
 
       countryData.then(async function(selectedResult) {
 
+        selectedResults = selectedResult;
+
         featureGroup.clearLayers();
         airports.clearLayers();
         cities.clearLayers();
         featureGroupFun(featureGroup, selectedResult, map, airports, cities)
 
         var capitalResult = await fetchResultFromPhp('php/getCapital.php', {iso : selected_iso});
+
+        currencyCode = capitalResult.data[0].currencyCode;
         var selectedCapital = capitalResult.data[0].capital;
 
         countryInfo(selectedResult, selectedCapital)
@@ -203,11 +178,6 @@ $(window).on('load', function () {
         var dailyForecast = await fetchResultFromPhp('php/getdaily.php', {capital : selectedCapital})          
         weather(selectedCapital, selectedResult, currentWeatherInfo, hourlyForecast, dailyForecast);
 
-        var baseCurrency_iso = baseResult.data[0].annotations.currency.iso_code;
-        var selectedCurrency_iso = selectedResult.data[0].annotations.currency.iso_code;
-        var currencyData = await fetchResultFromPhp('php/getCurrencyRate.php', {from: baseCurrency_iso, to: selectedCurrency_iso});
-        currency(currencyData, baseResult, selectedResult)
-
         var currentYear = (new Date()).getFullYear();
         var holidayData = await fetchResultFromPhp('php/getHoliday.php', {year: currentYear, iso: selected_iso})
         holiday(selectedResult, holidayData)
@@ -215,12 +185,71 @@ $(window).on('load', function () {
         var newsData = await fetchResultFromPhp('php/getNews.php', {iso: selected_iso});
         DisplayNews(selectedResult, newsData);
 
+        var currencyOptions = [];
+        var currencies = await fetchResultFromPhp('php/allCurrency.php', null);
+        Object.keys(currencies.data).forEach(currencyCode => {
+          const currencyInfo = currencies.data[currencyCode];
+          currencyOptions[currencyInfo.name] = currencyCode;
+        });
+
+        const keysArray = Object.keys(currencyOptions);
+        keysArray.sort();
+        const sortedCurrency = {};
+        keysArray.forEach(key => {
+          sortedCurrency[key] = currencyOptions[key];
+        });
+
+        for (const key in sortedCurrency) {
+          if (sortedCurrency.hasOwnProperty(key)) {
+            var newOption = $('<option>', {
+              value: sortedCurrency[key], 
+              text: key
+            });
+            $('#currency').append(newOption);
+          }
+        }
+        $('#currency').val('USD').change();
+
         //$('#preloader').hide();
       }).catch(function(error) {
         console.error(error.message);
       });  
     });
+
+    $('#currency').change(async function() {
+      var selectedCurrencycode = $(this).val();
+
+      var currencyRate = await fetchResultFromPhp('php/getCurrencyRate.php', {from: currencyCode, to: selectedCurrencycode});
+      var rate = currencyRate.data[selectedCurrencycode];
+      
+      var selectedCurrencyData = await fetchResultFromPhp('php/allCurrency.php', {code: selectedCurrencycode});
+      var selectedCurrencySymbol = selectedCurrencyData.data[selectedCurrencycode].symbol
+     
+      currency(rate, selectedResults, selectedCurrencySymbol)
+    })
 });
+
+
+//Display currency det and converter
+async function currency(rate, result, selectedCurrencySymbol){
+  $('#conversionInput').val(1)
+  
+  $('#currencyName').text(result.data[0].annotations.currency.name)
+  $('#currencyResult').val(selectedCurrencySymbol + convertToDecimal(rate));
+  
+
+  $('#conversionInput').on('input', async function() {
+    var amount = $(this).val();
+    if(amount){
+      convertedResult = amount * rate;
+      $('#currencyResult').val(selectedCurrencySymbol + convertToDecimal(convertedResult));
+    } else {
+      $('#currencyResult').val(selectedCurrencySymbol + '1');
+    }
+  });
+}
+
+
 
 //Display news
 function DisplayNews(result, newsData){
@@ -314,8 +343,8 @@ function weather(capital, result, currentWeatherInfo, hourlyForecast, dailyForec
   $('#currentImg').attr('src', `https://openweathermap.org/img/wn/${currentWeatherInfo.data.weather[0].icon}.png`)
 
   $('#description').text(currentWeatherInfo.data.weather[0].description);
-  $('#temp').text(`${Math.ceil(currentWeatherInfo.data.main.temp)}\u00B0C`);
-  $('#feels_like').text(`${Math.ceil(currentWeatherInfo.data.main.feels_like)}\u00B0C`);
+  $('#temp_max').text(`${Math.ceil(currentWeatherInfo.data.main.temp_max)}`);
+  $('#temp_min').text(`${Math.ceil(currentWeatherInfo.data.main.temp_min)}`);
 
   var limitedHourly = hourlyForecast.data.slice(0, 4);
   var limitedDaily = dailyForecast.data.slice(1, 5);
@@ -343,7 +372,7 @@ function weather(capital, result, currentWeatherInfo, hourlyForecast, dailyForec
                 <div class="card mb-3">
                   <h5 class="text-center">${convertDateToDayName(data.datetime)}</h5>
                   <img src="https://www.weatherbit.io/static/img/icons/${data.weather.icon}.png" class="img-fluid rounded-start" alt="...">
-                  <div class="text-wrap text-center" style="white-space: nowrap;">${Math.ceil(data.max_temp)} - ${Math.ceil(data.min_temp)}\u00B0C</div>
+                  <div class="text-wrap text-center" style="white-space: nowrap;">${Math.ceil(data.max_temp)}\u00B0C - ${Math.ceil(data.min_temp)}\u00B0C</div>
                 </div>
               </div>`;
     
@@ -358,38 +387,6 @@ function convertToDecimal(number){
   return roundedNumber.toFixed(2);
 }
 
-//Display currency det and converter
-async function currency(currencyData, baseResult, selectedResult){
-
-  var selectedSymbol = selectedResult.data[0].annotations.currency.symbol;
-  var baseSymbol = baseResult.data[0].annotations.currency.symbol;
-
-  $('#currencyResult').text(selectedSymbol + '0');
-  $('#conversionInput').val('');
-
-  var baseCurrency_iso = baseResult.data[0].annotations.currency.iso_code;
-  var selectedCurrency_iso = selectedResult.data[0].annotations.currency.iso_code;
-
-  $('#currencyName').text(`Currency name: ${selectedResult.data[0].annotations.currency.name}`)
-  $('#symbol').html(`Symbol: ${selectedSymbol}`)
-  $('#code').text(`Currency code: ${selectedCurrency_iso}`)
-  $('#conversion').html(`Conversion rate: ${baseSymbol}1 is ${selectedSymbol + convertToDecimal(currencyData.data[selectedCurrency_iso])}`)
-  
-  $('label[for="conversionInput"]').text(`${baseSymbol} to ${selectedSymbol}`);
-
-  var convertedResult = ''
-
-  $('#conversionInput').on('input', async function() {
-    var amount = $(this).val();
-    if(amount){
-      convertedResult = await fetchResultFromPhp('php/convertCurrency.php', {from: baseCurrency_iso, to: selectedCurrency_iso, amount: amount});
-      $('#currencyResult').text(selectedSymbol + convertToDecimal(convertedResult.data));
-    } else {
-      $('#currencyResult').text(selectedSymbol + '0');
-    }
-    
-  });
-}
 
 //Convert date to dayName
 function convertDateToDayName(date){

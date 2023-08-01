@@ -95,37 +95,21 @@
             <div class="container-fluid">
               <div class="container">
                 <div class="row">
-                  <h3>Today</h3>
-                  <hr>
-                </div>
-                <div class="row text-center">
-                  <div class="col-4 text-center">
-                    <img id="currentImg" src="" class="card-img-top img-fluid" alt="" style="min-width: 110px">
-                  </div>
-                  <div class="col">
+                  <div class="col border m-2">
+                    <p class="fw-bold fs-5 mt-1">TODAY</p>
                     <div class="row">
-                      <h5>Details</h5>
-                      <hr>
+                      <div class="col text-center m-3">
+                        <p id="description" class="fw-bold fs-6"></p>
+                      </div>
+                      <div class="col text-center">
+                        <img id="currentImg" class="img-fluid mt-0" src="" alt="" title="">
+                      </div>    
+                      <div class="col text-center">
+                        <p class="fw-bold fs-4 mb-0"><span id="temp_max"></span><sup>o</sup><span class="tempMetric">c</span></p>
+                        <p class="fs-5 mt-0 text-secondary"><span id="temp_min"></span><sup>o</sup><span class="tempMetric">c</span></p>
+                      </div>    
                     </div>
-                    <div class="row">
-                      <table class="table table-borderless">
-                        <tbody>
-                          <tr>
-                            <th scope="row">Description</th>
-                            <td id="description"></td>
-                          </tr>
-                          <tr>
-                            <th scope="row">Temperature</th>
-                            <td id="temp"></td>
-                          </tr>
-                          <tr>
-                            <th scope="row">Feels like</th>
-                            <td id="feels_like"></td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                  </div>   
                 </div>
               </div>
               <hr>
@@ -156,53 +140,33 @@
       </div>
     </div>
 
-
-    <!-- Currency Modal -->
-    <div id="currencyModal" class="modal" data-bs-backdrop="false" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div id="currencyModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="exampleModalLabel" aria-hidden="true">    
+      <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content shadow">
-          <div class="modal-header bg-success bg-gradient text-white">
-            <h1 class="modal-title fs-2" id="currencyLabel">Currency calculator</h1>
+          <div class="modal-header bg-secondary bg-gradient text-white">
+            <h5 class="modal-title">Currency calculator</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <div class="container">
-              <div class="row">
-                <p id="currencyName"></p>
-                <p id="symbol"></p>
-                <p id="code"></p>
+            <form>
+              <div class="form-floating mb-3">
+                <input id="conversionInput" type="number" class="form-control" value="1" min="1" step="1">
+                <label >From <span id="currencyName"></span></label>
               </div>
-              <hr >
-            </div>
-            
-            <div class="container">
-              <div class="row">
-                <p id="conversion"></p>
+    
+              <div class="form-floating mb-3">
+                <select id="currency" class="form-select"></select>
+                <label >To</label>
               </div>
-            
-              <div class="row g-2">
-                <div class="col-7 col-sm-5">
-                  <div class="form-floating mb-3">
-                    <input type="number" class="form-control" id="conversionInput">
-                    <label for="conversionInput"></label>
-                  </div>
-                </div>
-                <div class="col col-2 col-sm-1">
-                  <div class="m-1">
-                    <p class="mt-3">=</p>
-                  </div>
-                </div>
-                <div class="col">
-                  <div class="m-1">
-                    <p id="currencyResult" class="mt-3">0</p>
-                  </div>
-                </div>
+    
+              <div class="form-floating mb-3">
+                <input id="currencyResult" type="text" class="form-control" disabled>
+                <label>Result</label>
               </div>
-            </div>
-            
+            </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm myBtn" data-bs-dismiss="modal">CLOSE</button>
           </div>
         </div>
       </div>
@@ -218,12 +182,6 @@
           </div>
           <div class="modal-body">
             <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th scope="col">Name</th>
-                  <th scope="col">Date</th>
-                </tr>
-              </thead>
               <tbody id="holidayBody"></tbody>
             </table>
           </div>

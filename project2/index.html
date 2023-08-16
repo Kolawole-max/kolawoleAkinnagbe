@@ -9,10 +9,6 @@
         <title>Company Directory</title>
         <link href="favicon.png" rel="icon">
 
-        <link rel="stylesheet" href="libs/css/bootstrap/bootstrap.min.css">
-        <link rel="stylesheet" href="libs/css/bootstrap/bootstrap-grid.css">
-        <link rel="stylesheet" href="libs/css/bootstrap/bootstrap-utilities.css">
-        <link rel="stylesheet" href="libs/css/bootstrap/bootstrap.css">
         <link rel="stylesheet" href="libs/css/bootstrap/styles.css">
 
         <link rel="stylesheet" href="css/style.css">
@@ -24,16 +20,17 @@
             <div class="border-end bg-white" id="sidebar-wrapper">
                 <div class="sidebar-heading border-bottom bg-light">Company Directory</div>
                 <div class="list-group list-group-flush">
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3 addNewEmployee list">Add employee</a>
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3 addNewDepartmentBtn list">Add department</a>
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3 addNewLocationBtn list">Add location</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3 sideLink list" href="index.html">Home</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3 sideLink addNewEmployee list">Add employee</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3 sideLink addNewDepartmentBtn list">Add department</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3 sideLink addNewLocationBtn list">Add location</a>
                     <p class="d-inline-flex gap-1">
                         <a class="list-group-item list-group-item-action list-group-item-light p-3" data-bs-toggle="collapse" href="#collapseLocation" role="button" aria-expanded="false" aria-controls="collapseLocation">
                          Locations
                         </a>
                     </p>
                     <div class="collapse" id="collapseLocation">
-                        <ul id="locationList" class="ps-0 text-center"></ul>
+                        <ul class="sideLink" id="locationList" class="ps-0 text-center"></ul>
                     </div>
                     <p class="d-inline-flex gap-1">
                         <a class="list-group-item list-group-item-action list-group-item-light p-3" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
@@ -41,7 +38,7 @@
                         </a>
                     </p>
                     <div class="collapse" id="collapseExample">
-                        <ul id="departmentList" class="ps-0 text-center"></ul>
+                        <ul class="sideLink" id="departmentList" class="ps-0 text-center"></ul>
                     </div>
                     
                 </div>
@@ -159,27 +156,28 @@
                             <!-- Edit location Modal -->
                             <div class="modal fade" id="editLocationModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                 <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                    <h1 class="modal-title fs-5">Edit Location</h1>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                    <form id="editLocationform">
-                                        <div class="input-group mb-3">
-                                        <span class="input-group-text" id="inputGroup-sizing-default">Name</span>
-                                        <input id="editLocationName" name="locationName" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5">Edit Location</h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
-                                    
+                                        <div class="modal-body">
+                                            <form id="editLocationform">
+                                                <div class="input-group mb-3">
+                                                    <span class="input-group-text" id="inputGroup-sizing-default">Name</span>
+                                                    <input id="editLocationName" name="locationName" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                                                </div>
+                                            
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button id="editLocationSaveBtn" type="submit" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Save</button>
+                                            <button id="editLocationCancelBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
+                                        </div>
+                                            </form>
                                     </div>
-                                    <div class="modal-footer">
-                                    <button id="editLocationSaveBtn" type="submit" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Save</button>
-                                    </form>
-                                    <button id="editLocationCancelBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
-                                    </div>
-                                </div>
                                 </div>
                             </div>
+                            
 
                             <!-- Confirm delete for departments-->
                             <div class="modal fade" id="deleteDepartmentModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -495,11 +493,8 @@
                 </div>
             </div>
         </div>
-        
-        <script src="libs/js/bootstrap/bootstrap.bundle.min.js" type="application/javascript"></script>
-        <script src="libs/js/bootstrap/bootstrap.min.js" type="application/javascript"></script>
-        <script src="libs/js/bootstrap/bootstrap.js" type="application/javascript"></script>
 
+        <script src="libs/js/bootstrap/bootstrap.bundle.min.js" type="application/javascript"></script>
 
         <script src="libs/js/all.js" type="application/javascript"></script>
 

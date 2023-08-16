@@ -1,16 +1,24 @@
 $(window).on('load', function () {
-  $('#preloader').show();
+  $('#preloader').show();                                                               
   
   // Toggle the side navigation
   const sidebarToggle = $('#sidebarToggle');
             
   if (sidebarToggle.length) {
       sidebarToggle.on('click', function(event) {
+        
           event.preventDefault();
           $('body').toggleClass('sb-sidenav-toggled');
           localStorage.setItem('sb|sidebar-toggle', $('body').hasClass('sb-sidenav-toggled'));
       });
   }
+
+  $('.sideLink').on('click', function(event){
+    if (sidebarToggle.length) {
+      // Remove the 'sb-sidenav-toggled' class from the body element to hide the sidebar
+      $('body').removeClass('sb-sidenav-toggled');
+    }
+  })
 
   $('#refreshBtn').click(function(e){
     e.preventDefault();
@@ -88,7 +96,9 @@ $(window).on('load', function () {
   });
 
 
-  reload();
+  loadDepartmentsTable();
+  loadLocationTable();
+  loadTableData();
 
   //Search bar action 
   $('#searchInput').on('input', function(){
@@ -405,7 +415,6 @@ $(window).on('load', function () {
 
     var location = $('#editDepartmentLocation').val()
     var name = $('#editDepartmentName').val();
-    $('#editDepartmentModal').text('');
 
     $.ajax({
       url: 'php/editDepartmentById.php',
@@ -526,7 +535,6 @@ $(window).on('load', function () {
     var location_id = $(this).attr("data-id");
 
     var name = $('#editLocationName').val();
-    $('#editLocationModal').text('');
 
     $.ajax({
       url: 'php/editLocationById.php',
@@ -538,7 +546,7 @@ $(window).on('load', function () {
       },
       success: function(result) {
         //$('#editLocationModal').modal('hide')
-        reload()
+        //reload()
       },
       error: function(jqXHR, textStatus, errorThrown) {
         console.log(textStatus);
@@ -582,9 +590,12 @@ $(window).on('load', function () {
 
 function reload(){
   $('#preloader').show();
-  loadDepartmentsTable();
-  loadLocationTable();
-  loadTableData();
+  // loadDepartmentsTable();
+  // loadLocationTable();
+  // loadTableData();
+
+  location.reload();
+  
   $('#preloader').hide();
 }
 
@@ -699,7 +710,7 @@ function addDepartmentsDataToList(results){
 
   //Delete department button
   $('#departmentTable tr td button:nth-child(1)').click(function(){ //getAllLocation.php
-    console.log('log')
+    //console.log('log');
     $('#deptWarningMessage').hide();
     $('#deleteDepartmentModal').modal('show');
 

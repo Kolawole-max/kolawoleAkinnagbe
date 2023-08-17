@@ -371,35 +371,13 @@ $(window).on('load', function () {
     var id = $(this).attr("data-id");
 
     $.ajax({
-      url: 'php/confirmDeleteDepartment.php',
+      url: 'php/deleteDepartmentByID.php',
       type: 'POST',
       dataType: 'json',
-      data: {id: id}, 
-      success: function(results) {
-        $.each(results.data, function(index, data){
-          
-          if(parseInt(data.personnel) > 0){
-
-            $('#deptWarningMessage').show();
-
-          } else {
-            $.ajax({
-              url: 'php/deleteDepartmentByID.php',
-              type: 'POST',
-              dataType: 'json',
-              data: {id : id}, 
-              success: function(result) {
-                $('#deleteDepartmentModal').modal('hide');
-                reload();
-              },
-              error: function(jqXHR, textStatus, errorThrown) {
-                console.log(textStatus)
-              }
-            });
-
-          }
-        })
-
+      data: {id : id}, 
+      success: function(result) {
+        $('#deleteDepartmentModal').modal('hide');
+        reload();
       },
       error: function(jqXHR, textStatus, errorThrown) {
         console.log(textStatus)
@@ -491,35 +469,13 @@ $(window).on('load', function () {
     var id = $(this).attr("data-id");
 
     $.ajax({
-      url: 'php/confirmDeleteLocation.php',
+      url: 'php/deleteLocationById.php',
       type: 'POST',
       dataType: 'json',
-      data: {id: id}, 
-      success: function(results) {
-        $.each(results.data, function(index, data){
-          
-          if(parseInt(data.department) > 0){
-
-            $('#locationWarningMessage').show();
-
-          } else {
-            $.ajax({
-              url: 'php/deleteLocationById.php',
-              type: 'POST',
-              dataType: 'json',
-              data: {id : id}, 
-              success: function(result) {
-                $('#deleteLocationModal').modal('hide');
-                reload()
-              },
-              error: function(jqXHR, textStatus, errorThrown) {
-                console.log(textStatus)
-              }
-            });
-
-          }
-        })
-
+      data: {id : id}, 
+      success: function(result) {
+        $('#deleteLocationModal').modal('hide');
+        reload()
       },
       error: function(jqXHR, textStatus, errorThrown) {
         console.log(textStatus)
@@ -546,7 +502,7 @@ $(window).on('load', function () {
       },
       success: function(result) {
         //$('#editLocationModal').modal('hide')
-        //reload()
+        reload()
       },
       error: function(jqXHR, textStatus, errorThrown) {
         console.log(textStatus);
@@ -590,11 +546,12 @@ $(window).on('load', function () {
 
 function reload(){
   $('#preloader').show();
-  // loadDepartmentsTable();
-  // loadLocationTable();
-  // loadTableData();
 
-  location.reload();
+  loadDepartmentsTable();
+  loadLocationTable();
+  loadTableData();
+
+  //location.reload();
   
   $('#preloader').hide();
 }
@@ -624,7 +581,7 @@ function addLocationDataToList(results){
           ${result.name}
         </td>
         <td class="align-middle text-end text-nowrap">
-          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#deleteLocationModal" data-id="${result.id}"> 
+          <button type="button" class="btn btn-primary btn-sm" data-id="${result.id}"> 
             <i class="fa-solid fa-trash fa-fw"></i>
           </button>
           <button  type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editLocationModal" data-id="${result.id}">
@@ -636,11 +593,35 @@ function addLocationDataToList(results){
   $('#locationTable').append(tableRow);
 
   //Delete department button
-  $('#locationTable tr td button:nth-child(1)').click(function(){ //getAllLocation.php
-    $('#locationWarningMessage').hide();
+  $('#locationTable tr td button:nth-child(1)').click(function(){ 
 
     var location_id = $(this).attr("data-id");
-    $('#deleteLocationConfirmBtn').attr('data-id', location_id)
+
+    $.ajax({
+      url: 'php/confirmDeleteLocation.php',
+      type: 'POST',
+      dataType: 'json',
+      data: {id: location_id}, 
+      success: function(results) {
+        $.each(results.data, function(index, data){
+          
+          if(parseInt(data.department) > 0){
+
+            $('#deleteWarningLocationModal').modal('show');
+
+          } else {
+            
+            $('#deleteLocationConfirmBtn').attr('data-id', location_id)
+            $('#deleteLocationModal').modal('show');
+            
+          }
+        })
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        console.log(textStatus)
+      }
+    });
+    
   })
 
 
@@ -709,13 +690,32 @@ function addDepartmentsDataToList(results){
   $('#departmentTable').append(departmentRow);
 
   //Delete department button
-  $('#departmentTable tr td button:nth-child(1)').click(function(){ //getAllLocation.php
-    //console.log('log');
-    $('#deptWarningMessage').hide();
-    $('#deleteDepartmentModal').modal('show');
+  $('#departmentTable tr td button:nth-child(1)').click(function(){ 
 
     var department_id = $(this).attr("data-id");
-    $('#deleteDepartmentConfirmBtn').attr('data-id', department_id)
+    $.ajax({
+      url: 'php/confirmDeleteDepartment.php',
+      type: 'POST',
+      dataType: 'json',
+      data: {id: department_id}, 
+      success: function(results) {
+        $.each(results.data, function(index, data){
+          
+          if(parseInt(data.personnel) > 0){
+
+            $('#deleteWarningDepartmentModal').modal('show');
+
+          } else {
+            $('#deleteDepartmentModal').modal('show');
+
+            $('#deleteDepartmentConfirmBtn').attr('data-id', department_id)
+          }
+        })
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        console.log(textStatus)
+      }
+    });
   })
 
   //Edit dept button

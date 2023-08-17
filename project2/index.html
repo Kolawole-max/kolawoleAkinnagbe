@@ -10,6 +10,7 @@
         <link href="favicon.png" rel="icon">
 
         <link rel="stylesheet" href="libs/css/bootstrap/styles.css">
+        <link rel="stylesheet" href="libs/css/bootstrap/all.css">
 
         <link rel="stylesheet" href="css/style.css">
 
@@ -146,9 +147,6 @@
                                         <button id="deleteLocationConfirmBtn" type="button" class="btn btn-danger">Delete</button>
                                         <button id="deleteLocationCancelBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
                                     </div>
-                                    <div id="locationWarningMessage" class="text-center bg-info text-white">
-                                        <p class="mt-2 fs-6">Location cannot be deleted</p>
-                                    </div>
                                 </div>
                                 </div>
                             </div>
@@ -196,8 +194,39 @@
                                     <button id="deleteDepartmentConfirmBtn" type="button" class="btn btn-danger">Delete</button>
                                     <button id="deleteDepartmentCancelBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
                                     </div>
-                                    <div id="deptWarningMessage" class="text-center bg-info text-white">
-                                        <p class="mt-2 fs-6">Department cannot be deleted</p>
+                                </div>
+                                </div>
+                            </div>
+
+                            <!-- Confirm delete warning for departments-->
+                            <div class="modal fade" id="deleteWarningDepartmentModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-sm">
+                                <div class="modal-content">
+                                    <div class="modal-header text-bg-info">
+                                        <h1 class="modal-title fs-5" >Warning message</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="card-body text-center">
+                                            <h1 class="mt-2 fs-6">Department cannot be deleted because of its dependence</h1>
+                                        </div>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+
+                            <!-- Confirm delete warning for locations-->
+                            <div class="modal fade" id="deleteWarningLocationModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-sm">
+                                <div class="modal-content">
+                                    <div class="modal-header text-bg-info">
+                                        <h1 class="modal-title fs-5" >Warning message</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="card-body text-center">
+                                            <h1 class="mt-2 fs-6">Location cannot be deleted because of its dependence</h1>
+                                        </div>
                                     </div>
                                 </div>
                                 </div>
@@ -319,6 +348,8 @@
                                 </div>
                                 </div>
                             </div>
+
+
                         
                             <!-- Edit Personnel Modal -->
                             <div class="modal fade" id="editPersonnelModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">

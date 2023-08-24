@@ -12,6 +12,10 @@ section {
   height: calc(100vh - 20px);
 }
 
+.sidebar {
+  overflow: scroll;
+}
+
 .tab-content {
   flex: 1;
   overflow-y: scroll;
@@ -59,4 +63,8 @@ tr {
   100% {
       transform: translate(-50%, -50%) rotate(360deg);
   }
+}
+
+.prepends {
+  width: 25%;
 }

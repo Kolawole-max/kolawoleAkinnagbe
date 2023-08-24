@@ -34,8 +34,8 @@
 
 	// SQL statement accepts parameters and so is prepared to avoid SQL injection.
 	// $_REQUEST used for development / debugging. Remember to change to $_POST for production
-
-	$query = $conn->prepare('SELECT l.id, l.name, COUNT(d.id) as department FROM location l LEFT JOIN department d ON (l.id = d.locationID) WHERE l.id =  ?');
+	
+	$query = $conn->prepare('SELECT l.id, l.name, COUNT(d.id) as department FROM department d LEFT JOIN location l ON (l.id = d.locationID) WHERE l.id =  ?');
 
 	$query->bind_param("i", $_POST['id']);
 
